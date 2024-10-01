@@ -4,6 +4,10 @@ import pandas as pd
 # Streamlit App Title
 st.title("Series Generator for Data Inputs")
 
+# Initialize session state to hold the series data list if it doesn't exist
+if "series_data" not in st.session_state:
+    st.session_state.series_data = []
+
 # Input Fields
 st.header("Input Fields")
 
@@ -39,9 +43,6 @@ else:
 
 # Generate series on button click
 if st.button("Generate Series"):
-    # Initialize list to hold the series data
-    series_data = []
-
     # Generate series name conditionally based on the presence of inputs
     series_name_parts = [
         plant_abbr,
@@ -54,8 +55,8 @@ if st.button("Generate Series"):
     series_name = "_".join(filter(None, series_name_parts)).upper()
     description = f"{stream_name or ''} {eng_unit_desc or ''}".strip()
 
-    # Append the generated series data to a dictionary
-    series_data.append({
+    # Append the generated series data to session state
+    st.session_state.series_data.append({
         "name": series_name,
         "description": description,
         "is_calculation": "FALSE",
@@ -71,10 +72,9 @@ if st.button("Generate Series"):
         "process": process
     })
 
-    # Convert the series data to a DataFrame for display
-    df = pd.DataFrame(series_data)
-
-    # Display the generated DataFrame
+# Display the generated DataFrame if series data exists
+if st.session_state.series_data:
+    df = pd.DataFrame(st.session_state.series_data)
     st.subheader("Generated Series Data")
     st.dataframe(df)
 
@@ -86,3 +86,8 @@ if st.button("Generate Series"):
         file_name='generated_series.csv',
         mime='text/csv',
     )
+
+# Reset button to clear the list
+if st.button("Reset"):
+    st.session_state.series_data = []
+    st.success("Series data has been cleared.")
